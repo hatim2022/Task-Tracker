@@ -3,6 +3,7 @@ import AddTask from "./components/AddTask";
 import Header from "./components/Header";
 import Tasks from "./components/Tasks";
 
+const API_URL = "https://task-manager-v-12.herokuapp.com"
 
 function App() {
     const [showAddTask,setShowAddTask]=useState(false)
@@ -11,26 +12,27 @@ function App() {
     useEffect( function(){
       const getTasks = async () => {
       const tasksFromServer = await fetchTasks()
+      console.log(tasksFromServer)
       setTasks(tasksFromServer)
       }
       getTasks()
       },[]);
       
       async function fetchTasks(){
-        const res = await fetch('http://localhost:5000/tasks')
+        const res = await fetch(API_URL+"/tasks")
         const data = await res.json()
         return data;
       }
 
       async function fetchTask(id){
-        const res = await fetch(`http://localhost:5000/tasks/${id}`)
+        const res = await fetch(API_URL+"/tasks/${id}")
         const data = await res.json()
         return data;
       }
 
 
   const deleteTask = async (id) => {
-    await fetch(`http://localhost:5000/tasks/${id}`,{
+    await fetch(API_URL+"/tasks/${id}",{
       method: 'DELETE'
     })
 
@@ -43,7 +45,7 @@ function App() {
     const updTask = {...taskToToggle,
     reminder: !taskToToggle.reminder}
 
-    const res = await fetch(`http://localhost:5000/tasks/${id}`,{
+    const res = await fetch(API_URL+`tasks/${id}`,{
       method:'PUT',
       headers:{
         'Content-type': 'application/json'
@@ -62,7 +64,7 @@ function App() {
 
   async function addTask(task) {
 
-    const res = await fetch(`http://localhost:5000/tasks`,{
+    const res = await fetch(API_URL+`/tasks`,{
       method:'POST',
       headers:{
         'Content-type':'application/json'
