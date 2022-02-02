@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import AddTask from "./components/AddTask";
 import Header from "./components/Header";
 import Tasks from "./components/Tasks";
+import agent from "./service/agent"
 
 const API_URL = "https://task-manager-v-12.herokuapp.com"
 
@@ -9,51 +10,28 @@ function App() {
     const [showAddTask,setShowAddTask]=useState(false)
     const [tasks,setTasks] = useState([]) 
 
-    useEffect( function(){
-      const getTasks = async () => {
-      const tasksFromServer = await fetchTasks()
-      console.log(tasksFromServer)
-      setTasks(tasksFromServer)
+    useEffect(() => {
+      async function fetchMyApi(){
+      agent.getAllTasks().then(setTasks);
       }
-      getTasks()
-      },[]);
+      fetchMyApi()
+    },[]);
       
-      async function fetchTasks(){
-        const res = await fetch(API_URL+"/tasks")
-        const data = await res.json()
-        return data;
-      }
-
-      async function fetchTask(id){
-        const res = await fetch(API_URL+"/tasks/${id}")
-        const data = await res.json()
-        return data;
-      }
-
 
   const deleteTask = async (id) => {
-    await fetch(API_URL+"/tasks/${id}",{
-      method: 'DELETE'
-    })
-
+    
+    agent.deleteTask(id);
     setTasks(tasks.filter((task)=> task.id !== id ))
   }
 
   async function toggleReminder(id){
     
-    const taskToToggle = await fetchTask(id)
+    const taskToToggle = await agent.getTask(id)
     const updTask = {...taskToToggle,
     reminder: !taskToToggle.reminder}
 
-    const res = await fetch(API_URL+`tasks/${id}`,{
-      method:'PUT',
-      headers:{
-        'Content-type': 'application/json'
-      },
-      body: JSON.stringify(updTask)
-    })
-    
-    const data = await res.json()
+    const res = await agent.updateTask(updTask,id);    
+    const data = await res.data
 
     setTasks(
       tasks.map((task)=>
@@ -64,16 +42,10 @@ function App() {
 
   async function addTask(task) {
 
-    const res = await fetch(API_URL+`/tasks`,{
-      method:'POST',
-      headers:{
-        'Content-type':'application/json'
-      },
-      body: JSON.stringify(task),
-    });
+    const res = await agent.addTask(task);
 
     console.log(res);
-    const data = await res.json()
+    const data = await res.data
     setTasks([...tasks,data])
 
   }
@@ -85,7 +57,7 @@ function App() {
         />
     {showAddTask && <AddTask onAdd={addTask}/> }
     {tasks.length > 0 ? <Tasks tasks={tasks} onDelete=
-    {deleteTask} onToggle={toggleReminder} /> : 'no tasks to show'} 
+    {deleteTask} onToggle={toggleReminder} /> : 'No tasks to show '} 
     </div>
   );
 }
